@@ -1,0 +1,64 @@
+# Set up some variables relating to which path Vagrant will try to share
+# with the VM.
+require 'pathname'
+$docroot_name = "openatrium.com"
+$docroot_path = ""
+
+# Test that the directory to be shared is in the right place and if it is,
+# calculate the fully dereferenced path (since NFS exports will fail if you
+# try to specify the path to a symlink.)
+if !File.exists?("../#{$docroot_name}") then
+  puts "Please put the '%s' directory (or a symlink to it) in the '%s/' directory." %
+    [$docroot_name, Pathname.new("../").realpath.to_s]
+  exit 1
+else
+  $docroot_path = Pathname.new("../#{$docroot_name}").realpath.to_s
+end
+
+Vagrant::Config.run do |config|
+  # All Vagrant configuration is done here. The most common configuration
+  # options are documented and commented below. For a complete reference,
+  # please see the online documentation at vagrantup.com.
+
+  # Every Vagrant virtual environment requires a box to build off of.
+  config.vm.box = "centos-5.6-4.1.4"
+
+  # The url from where the 'config.vm.box' box will be fetched if it
+  # doesn't already exist on the user's system.
+  config.vm.box_url = "http://s3.amazonaws.com/treehouse-files/vagrant/centos-5.6-x86_64-netinstall-4.1.4.box"
+
+  # Boot with a GUI so you can see the screen. (Default is headless)
+  #config.vm.boot_mode = :gui
+
+  # Assign this VM to a host only network IP, allowing you to access it
+  # via the IP.
+  #config.vm.network "172.31.31.15"
+  config.vm.network :hostonly, "172.31.31.44"
+  config.ssh.max_tries = 100
+
+  # Forward a port from the guest to the host, which allows for outside
+  # computers to access the VM, whereas host only networking does not.
+  # config.vm.forward_port "http", 80, 8080
+  # config.vm.forward_port("http", 80, 8080, :auto => true)
+  #
+  # We do not use port forwarding since we have a network bridge enabled.
+  config.vm.forward_port 22, 22244
+
+  # Configure some virtual machine defaults.
+  config.vm.customize ["modifyvm", :id, "--memory", "512"]
+  config.vm.customize ["modifyvm", :id, "--cpus", "2"]
+  config.vm.customize ["modifyvm", :id, "--name", "OpenAtrium VM"]
+
+  # Share an additional folder to the guest VM. The first argument is
+  # an identifier, the second is the path on the guest to mount the
+  # folder, and the third is the path on the host to the actual folder.
+  # config.vm.share_folder "v-data", "/vagrant_data", "../data"
+  # config.vm.share_folder "v-data", "/vagrant_data", "../data"
+  config.vm.share_folder "openatrium-docroot", "/var/www/vhosts/openatrium.com", $docroot_path, :nfs => (RUBY_PLATFORM =~ /linux/ or RUBY_PLATFORM =~ /darwin/)
+
+  # Configure the VM with puppet.
+  config.vm.provision :puppet, :module_path => "modules", :options => ["--environment", "local"] do |puppet|
+    puppet.manifests_path = "manifests"
+    puppet.manifest_file = "site.pp"
+  end
+end

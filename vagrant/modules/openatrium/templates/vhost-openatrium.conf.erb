@@ -1,0 +1,50 @@
+# ************************************
+# Default template in module puppetlabs-apache
+# Managed by Puppet
+# ************************************
+
+NameVirtualHost <%= vhost_name %>:<%= port %>
+<VirtualHost <%= vhost_name %>:<%= port %>>
+  ServerName <%= srvname %>
+<% if serveraliases.is_a? Array -%>
+<% serveraliases.each do |name| -%><%= "  ServerAlias #{name}\n" %><% end -%>
+<% elsif serveraliases != '' -%>
+<%= "  ServerAlias #{serveraliases}" -%>
+<% end -%>
+  DocumentRoot <%= docroot %>
+  <Directory <%= docroot %>>
+    Options <%= options %>
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+  ErrorLog /var/log/<%= scope.lookupvar("apache::params::apache_name") %>/<%= name %>_error.log
+  LogLevel warn
+  CustomLog /var/log/<%= scope.lookupvar("apache::params::apache_name") %>/<%= name %>_access.log combined
+  ServerSignature Off
+</VirtualHost>
+
+#
+# PHP is an HTML-embedded scripting language which attempts to make it
+# easy for developers to write dynamically generated webpages.
+#
+
+LoadModule php5_module modules/libphp5.so
+
+#
+# Cause the PHP interpreter to handle files with a .php extension.
+#
+AddHandler php5-script .php
+AddType text/html .php
+
+#
+# Add index.php to the list of files that will be served as directory
+# indexes.
+#
+DirectoryIndex index.php
+
+#
+# Uncomment the following line to allow PHP to pretty-print .phps
+# files as PHP source code:
+#
+#AddType application/x-httpd-php-source .phps

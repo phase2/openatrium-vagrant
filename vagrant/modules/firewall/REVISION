@@ -1,0 +1,4 @@
+module: puppetlabs/firewall
+version: 0.0.4
+url: file:///Users/smerrill/.puppet/var/puppet-module/cache/http_forge_puppetlabs_com-75a31f1d6f1ef6eb63b4479b3512ee1508209a7f/puppetlabs-firewall-0.0.4.tar.gz
+installed: 2012-07-27 22:16:26 -0400

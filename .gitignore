@@ -1,0 +1,7 @@
+.vagrant
+.DS_Store
+vagrant/scratch
+*.swo
+*.swp
+*.sql.gz
+openatrium.com
