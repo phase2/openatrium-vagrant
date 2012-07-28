@@ -35,6 +35,9 @@ node default {
   include php
   include drush
 
+  # Install htop, a great process viewer.
+  include htop
+
   # Put dependencies in order.
   Class["ius"] -> Class["mysql::server"] -> Class["php"]
 }
